@@ -1,0 +1,64 @@
+#!/bin/sh
+set -e
+
+PACKAGE_NAME="deb-harden-ssh"
+SCRIPT_NAME="postrm"
+
+# --- Helper Functions ---
+
+# Inform the sysadmin about the remaining group rather than deleting it:
+notify_admin_about_ssh_users_group() {
+    if getent group ssh-users >/dev/null; then
+        echo "Note: The 'ssh-users' group was left intact to avoid breaking user group memberships." >&2
+        echo "To remove it manually, run: delgroup ssh-users" >&2
+    fi
+}
+
+reload_ssh() {
+    if sshd -t >/dev/null 2>&1; then
+        if command -v deb-systemd-invoke >/dev/null 2>&1; then
+            deb-systemd-invoke reload ssh || true
+        fi
+    fi
+}
+
+revert_sshd_config_permissions() {
+    if ! dpkg-statoverride --list "/etc/ssh/sshd_config" >/dev/null 2>&1; then
+        dpkg-statoverride --remove "/etc/ssh/sshd_config"
+        echo "Reverting permissions on '/etc/ssh/sshd_config' back to default"
+    fi
+    if ! dpkg-statoverride --list "/etc/ssh/sshd_config.d/" >/dev/null 2>&1; then
+        dpkg-statoverride --remove "/etc/ssh/sshd_config.d/"
+        echo "Reverting permissions on '/etc/ssh/sshd_config.d/' back to default"
+    fi
+}
+
+# --- Main Logic Execution ---
+
+case "$1" in
+    purge)
+        revert_sshd_config_permissions
+        reload_ssh
+        notify_admin_about_ssh_users_group
+    ;;
+
+	remove)
+        revert_sshd_config_permissions
+        notify_admin_about_ssh_users_group
+    ;;
+    
+    upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+	;;
+
+    *)
+        ARG="${1:-none}"
+        echo "${PACKAGE_NAME}: ${SCRIPT_NAME} called with unknown argument \`${ARG}\`" >&2
+        exit 1
+    ;;
+		
+esac
+
+# Automatically injects standard debhelper maintenance routines
+#DEBHELPER#
+
+exit 0

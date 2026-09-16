@@ -1,0 +1,2 @@
+etc/ssh/sshd_config.d/95-harden-ssh.conf etc/ssh/sshd_config.d/
+etc/fail2ban/jail.d/harden-ssh.conf etc/fail2ban/jail.d/

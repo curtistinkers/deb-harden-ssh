@@ -1,0 +1,67 @@
+#!/bin/sh
+set -e
+
+PACKAGE_NAME="deb-harden-ssh"
+SCRIPT_NAME="postinst"
+
+# --- Helper Functions ---
+
+add_ssh_users_group() {
+    if ! getent group ssh-users >/dev/null; then
+        addgroup --system ssh-users
+        echo "Adding system group 'ssh-users'"
+    fi
+}
+
+reload_ssh() {
+    if sshd -t; then
+        if command -v deb-systemd-invoke >/dev/null 2>&1; then
+            deb-systemd-invoke reload ssh || true
+        fi
+    else
+        echo "WARNING: Invalid SSH configuration! Service not reloaded." >&2
+    fi
+}
+
+reload_fail2ban() {
+    if command -v deb-systemd-invoke >/dev/null 2>&1; then
+        deb-systemd-invoke reload fail2ban || true
+    fi
+}
+
+harden_sshd_config_permissions() {
+    if ! dpkg-statoverride --list "/etc/ssh/sshd_config" >/dev/null 2>&1; then
+        dpkg-statoverride --update --add "root" "root" "600" "/etc/ssh/sshd_config"
+        echo "Setting permissions on '/etc/ssh/sshd_config' to 600"
+    fi
+    if ! dpkg-statoverride --list "/etc/ssh/sshd_config.d/" >/dev/null 2>&1; then
+        dpkg-statoverride --update --add "root" "root" "600" "/etc/ssh/sshd_config.d/"
+        echo "Setting permissions on '/etc/ssh/sshd_config.d/' to 600"
+    fi
+}
+
+# --- Main Logic Execution ---
+
+case "$1" in
+    configure)
+        harden_sshd_config_permissions
+        add_ssh_users_group
+        reload_ssh
+        reload_fail2ban
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+        ARG="${1:-none}"
+        echo "${PACKAGE_NAME}: ${SCRIPT_NAME} called with unknown argument \`${ARG}\`" >&2
+        exit 1
+        ;;
+
+esac
+
+# Automatically injects standard debhelper maintenance routines
+#DEBHELPER#
+
+exit 0

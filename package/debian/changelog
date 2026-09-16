@@ -1,0 +1,15 @@
+deb-harden-ssh (1.0.0-1) main; urgency=low
+
+  * Initial release of deb-harden-ssh package.
+  * Add /etc/ssh/sshd_config.d/99-harden-ssh.conf drop-in configuration.
+  * Add /etc/fail2ban/jail.d/harden-ssh.conf drop-in configuration.
+  * Restrict SSH access to members of the ssh-users system group.
+  * Enforce Lynis SSH hardening recommendations (root login, timeouts,
+    auth attempts).
+  * Add postinst logic to create ssh-users group, validate sshd syntax, and
+    reload the service.
+  * Add postrm logic to safely handle package removal and notify sysadmin
+    on purge.
+    (Closes: #100000)
+
+ -- curtistinkers <curtistinkers@gmail.com>  Mon, 24 Aug 2026 13:28:00 -0500
