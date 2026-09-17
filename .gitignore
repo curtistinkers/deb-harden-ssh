@@ -1,1 +1,10 @@
 build/
+**/*.deb
+**/*.build
+**/*.buildinfo
+**/*.changes
+**/.debhelper
+**/debhelper-build-stamp
+**/*.substvars
+**/deb-harden-ssh/*
+**/debian/files
