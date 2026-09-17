@@ -46,11 +46,17 @@ echo "Starting build process for package: ${PACKAGE_NAME} (Directory: ${TARGET_I
 # Create output directory for binaries if it doesn't exist
 mkdir -p "${OUTPUT_DIR}"
 
+echo "Created output directory for build artifacts: ${OUTPUT_DIR}"
+
 # Navigate into the package directory
 cd "${TARGET_DIR}"
 
+echo "Changing to package directory: ${TARGET_DIR}"
+
 # Clean any existing artifacts before build
-debuild -- clean >/dev/null 2>&1 || true
+debuild --no-tgz-check -- clean >/dev/null 2>&1 || true
+
+echo "# Clean any existing artifacts before build"
 
 # Run debuild to create binary package (-b) without signing changes/dsc (-us -uc)
 echo "Running debuild..."
@@ -69,6 +75,6 @@ find "${PARENT_DIR}" -maxdepth 1 -type f \( -name "${PACKAGE_NAME}_*.changes" -o
 # --- Final Source Clean ---
 echo "Cleaning up source directory..."
 cd "${TARGET_DIR}"
-debuild -- clean >/dev/null 2>&1 || true
+debuild --no-tgz-check -- clean >/dev/null 2>&1 || true
 
 echo "Success! Built artifacts are in: ${OUTPUT_DIR}"
