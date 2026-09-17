@@ -23,13 +23,17 @@ reload_ssh() {
 }
 
 revert_sshd_config_permissions() {
-    if ! dpkg-statoverride --list "/etc/ssh/sshd_config" >/dev/null 2>&1; then
+    if dpkg-statoverride --list "/etc/ssh/sshd_config" >/dev/null 2>&1; then
         dpkg-statoverride --remove "/etc/ssh/sshd_config"
-        echo "Reverting permissions on '/etc/ssh/sshd_config' back to default"
     fi
+<<<<<<< HEAD
     if ! dpkg-statoverride --list "/etc/ssh/sshd_config.d/" >/dev/null 2>&1; then
         dpkg-statoverride --remove "/etc/ssh/sshd_config.d/"
         echo "Reverting permissions on '/etc/ssh/sshd_config.d/' back to default"
+=======
+    if dpkg-statoverride --list "/etc/ssh/sshd_config.d" >/dev/null 2>&1; then
+        dpkg-statoverride --remove "/etc/ssh/sshd_config.d"
+>>>>>>> e9e6d1a (Fix install script path and correct permission settings in postinst and postrm scripts)
     fi
 }
 
@@ -37,16 +41,26 @@ revert_sshd_config_permissions() {
 
 case "$1" in
 	remove)
+<<<<<<< HEAD
 
     ;;
 
     purge)
         revert_sshd_config_permissions
+=======
+        revert_sshd_config_permissions
+    ;;
+
+    purge)
+>>>>>>> e9e6d1a (Fix install script path and correct permission settings in postinst and postrm scripts)
         reload_ssh
         notify_admin_about_ssh_users_group
     ;;
 
+<<<<<<< HEAD
     
+=======
+>>>>>>> e9e6d1a (Fix install script path and correct permission settings in postinst and postrm scripts)
     upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
 	;;
 
