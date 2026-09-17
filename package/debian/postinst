@@ -10,6 +10,7 @@ add_ssh_users_group() {
     if ! getent group ssh-users >/dev/null; then
         addgroup --system ssh-users
         echo "Adding system group 'ssh-users'"
+        echo "Users must be added to the group 'ssh-users' to log in using SSH"
     fi
 }
 
@@ -45,9 +46,9 @@ harden_sshd_config_permissions() {
 case "$1" in
     configure)
         harden_sshd_config_permissions
-        add_ssh_users_group
         reload_ssh
         reload_fail2ban
+        add_ssh_users_group
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
