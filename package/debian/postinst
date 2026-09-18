@@ -35,13 +35,8 @@ harden_sshd_config_permissions() {
         dpkg-statoverride --update --add "root" "root" "0600" "/etc/ssh/sshd_config"
         echo "Setting permissions on '/etc/ssh/sshd_config' to 600"
     fi
-<<<<<<< HEAD
-    if ! dpkg-statoverride --list "/etc/ssh/sshd_config.d/" >/dev/null 2>&1; then
-        dpkg-statoverride --update --add "root" "root" "600" "/etc/ssh/sshd_config.d/"
-=======
     if ! dpkg-statoverride --list "/etc/ssh/sshd_config.d" >/dev/null 2>&1; then
         dpkg-statoverride --update --add "root" "root" "0600" "/etc/ssh/sshd_config.d"
->>>>>>> e9e6d1a (Fix install script path and correct permission settings in postinst and postrm scripts)
         echo "Setting permissions on '/etc/ssh/sshd_config.d/' to 600"
     fi
 }
