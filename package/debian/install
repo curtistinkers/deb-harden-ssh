@@ -1,7 +1,7 @@
 etc/ssh/ssh_config.d/90-deb-harden-ssh_crypto.conf etc/ssh/ssh_config.d/
 
-etc/ssh/sshd_config.d/10-deb-harden-sshd_override.conf etc/ssh/sshd_config.d/
-etc/ssh/sshd_config.d/90-deb-harden-sshd_crypto.conf etc/ssh/sshd_config.d/
+etc/ssh/sshd_config.d/10-deb-harden-ssh_override.conf etc/ssh/sshd_config.d/
+etc/ssh/sshd_config.d/90-deb-harden-ssh_crypto.conf etc/ssh/sshd_config.d/
 
 etc/fail2ban/jail.d/deb-harden-ssh.conf etc/fail2ban/jail.d/
 
