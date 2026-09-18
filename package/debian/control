@@ -1,5 +1,5 @@
 Source: deb-harden-ssh
-Section: misc
+Section: admin
 Priority: optional
 Maintainer: curtistinkers <curtistinkers@gmail.com>
 Build-Depends: debhelper-compat (= 13)
@@ -23,5 +23,5 @@ Enhances:
 Suggests:
  lynis
 Description: Hardened SSH daemon configuration based on Lynis audit rules.
- Applies security hardening parameters to OpenSSH via drop-in configuration
- snippet in /etc/ssh/sshd_config.d/ and a fail2ban jail.
+ Applies security hardening parameters to OpenSSH via configuration snippets
+ in /etc/ssh/sshd_config.d/, systemd service sandboxing, and a fail2ban jail.
