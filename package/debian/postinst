@@ -14,19 +14,22 @@ add_ssh_users_group() {
     fi
 }
 
-reload_ssh() {
-    if sshd -t; then
-        if command -v deb-systemd-invoke >/dev/null 2>&1; then
-            deb-systemd-invoke reload ssh || true
-        fi
-    else
-        echo "WARNING: Invalid SSH configuration! Service not reloaded." >&2
+harden_sshd_config_permissions() {
+    if ! dpkg-statoverride --list "/etc/ssh/ssh_config" >/dev/null 2>&1; then
+        dpkg-statoverride --update --add "root" "root" "0644" "/etc/ssh/ssh_config"
+        echo "Setting permissions on '/etc/ssh/ssh_config' to 644"
     fi
-}
-
-reload_fail2ban() {
-    if command -v deb-systemd-invoke >/dev/null 2>&1; then
-        deb-systemd-invoke reload fail2ban || true
+    if ! dpkg-statoverride --list "/etc/ssh/ssh_config.d" >/dev/null 2>&1; then
+        dpkg-statoverride --update --add "root" "root" "0644" "/etc/ssh/ssh_config.d"
+        echo "Setting permissions on '/etc/ssh/ssh_config.d/' to 644"
+    fi
+    if ! dpkg-statoverride --list "/etc/ssh/sshd_config" >/dev/null 2>&1; then
+        dpkg-statoverride --update --add "root" "root" "0600" "/etc/ssh/sshd_config"
+        echo "Setting permissions on '/etc/ssh/sshd_config' to 600"
+    fi
+    if ! dpkg-statoverride --list "/etc/ssh/sshd_config.d" >/dev/null 2>&1; then
+        dpkg-statoverride --update --add "root" "root" "0600" "/etc/ssh/sshd_config.d"
+        echo "Setting permissions on '/etc/ssh/sshd_config.d/' to 600"
     fi
 }
 
@@ -36,14 +39,61 @@ reload_systemd_daemon() {
     fi
 }
 
-harden_sshd_config_permissions() {
-    if ! dpkg-statoverride --list "/etc/ssh/sshd_config" >/dev/null 2>&1; then
-        dpkg-statoverride --update --add "root" "root" "0600" "/etc/ssh/sshd_config"
-        echo "Setting permissions on '/etc/ssh/sshd_config' to 600"
+reload_ssh() {
+    if sshd -t; then
+        if command -v systemctl >/dev/null 2>&1 && systemctl is-active --quiet ssh; then
+            echo "[*] SSH service is active."
+            if command -v deb-systemd-invoke >/dev/null 2>&1; then
+                deb-systemd-invoke reload ssh || true
+            fi
+        else
+            echo "[!] WARNING: SSH server is not running." >&2
+        fi
+    else
+        echo "[!] WARNING: Invalid SSH configuration! Service not reloaded." >&2
     fi
-    if ! dpkg-statoverride --list "/etc/ssh/sshd_config.d" >/dev/null 2>&1; then
-        dpkg-statoverride --update --add "root" "root" "0600" "/etc/ssh/sshd_config.d"
-        echo "Setting permissions on '/etc/ssh/sshd_config.d/' to 600"
+}
+
+reload_fail2ban() {
+    if command -v fail2ban-server >/dev/null 2>&1; then
+        echo "[*] Validating fail2ban configuration..."
+        if fail2ban-server -t; then
+            if command -v systemctl >/dev/null 2>&1 && systemctl is-active --quiet fail2ban; then
+                echo "[*] Reloading the fail2ban service."
+                if command -v deb-systemd-invoke >/dev/null 2>&1; then
+                    deb-systemd-invoke reload fail2ban || true
+                fi
+            else
+                echo "[!] fail2ban service not active." >&2
+            fi
+        else
+            echo "[!] ERROR: Invalid fail2ban configuration! Service not reloaded." >&2
+            return 1
+        fi
+    else
+        echo "[!] fail2ban is not installed." >&2
+    fi
+}
+
+reload_audit_rules() {
+    if command -v augenrules >/dev/null 2>&1; then
+        echo "[*] Validating auditd rules..."
+        if augenrules --check; then
+            if command -v systemctl >/dev/null 2>&1 && systemctl is-active --quiet auditd; then
+                echo "[*] Compiling and loading auditd rules into the kernel."
+                augenrules --load || true
+                if command -v deb-systemd-invoke >/dev/null 2>&1; then
+                    deb-systemd-invoke reload auditd || true
+                fi
+            else
+                echo "[!] auditd service not active, skipping kernel rule load." >&2
+            fi
+        else
+            echo "[!] ERROR: Audit rule syntax validation failed! Rules not loaded." >&2
+            return 1
+        fi
+    else
+        echo "[!] augenrules not installed, skipping audit rule reload." >&2
     fi
 }
 
@@ -55,6 +105,7 @@ case "$1" in
         reload_systemd_daemon
         reload_ssh
         reload_fail2ban
+        reload_audit_rules
         add_ssh_users_group
     ;;
 
