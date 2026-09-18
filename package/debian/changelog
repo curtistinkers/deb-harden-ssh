@@ -1,4 +1,4 @@
-deb-harden-ssh (1.0.0-1) main; urgency=low
+deb-harden-ssh (1.0.0-1) stable; urgency=low
 
   * Initial release of deb-harden-ssh package.
   * Add /etc/ssh/sshd_config.d/99-harden-ssh.conf drop-in configuration.
