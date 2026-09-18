@@ -1,0 +1,12 @@
+# =====================================================================
+# 40-ssh.rules: OpenSSH Configuration & Binary Monitoring
+# =====================================================================
+
+# --- OpenSSH Configuration Files ---
+-w /etc/ssh/sshd_config -p wa -k ssh_config_changes
+-w /etc/ssh/sshd_config.d/ -p wa -k ssh_config_changes
+-w /etc/ssh/ssh_config -p wa -k ssh_config_changes
+-w /etc/ssh/ssh_config.d/ -p wa -k ssh_config_changes
+
+# --- OpenSSH Binaries ---
+-w /usr/sbin/sshd -p x -k ssh_binary_execution

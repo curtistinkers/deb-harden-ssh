@@ -1,0 +1,15 @@
+# =====================================================================
+# OpenSSH File Integrity Management Rules
+# =====================================================================
+
+# Monitor SSH configuration directory and daemon config for unauthorized changes
+/etc/ssh/sshd_config$ Full
+/etc/ssh/sshd_config\.d/ Full
+
+# Monitor SSH client configuration
+/etc/ssh/ssh_config$ Full
+/etc/ssh/ssh_config\.d/ Full
+
+# Monitor host keys (Note: Private keys will trigger alerts on rotation, which is expected behavior for security auditing)
+/etc/ssh/ssh_host_.*_key$ R+b+sha512
+/etc/ssh/ssh_host_.*_key\.pub$ Full

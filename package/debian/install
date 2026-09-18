@@ -1,3 +1,7 @@
+etc/audit/rules.d/50-deb-harden-ssh.rules etc/audit/rules.d/
+
+etc/aide/aide.conf.d/90_deb-harden-ssh etc/aide/aide.conf.d
+
 etc/ssh/ssh_config.d/90-deb-harden-ssh_crypto.conf etc/ssh/ssh_config.d/
 
 etc/ssh/sshd_config.d/10-deb-harden-ssh_override.conf etc/ssh/sshd_config.d/
