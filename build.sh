@@ -4,7 +4,7 @@
 set -e
 
 # --- Configuration ---
-TARGET_INPUT="package"
+TARGET_INPUT="${1%/:-package}"
 PROJECT_ROOT="$(pwd)"
 OUTPUT_DIR="${PROJECT_ROOT}/build"
 
