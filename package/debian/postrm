@@ -36,16 +36,16 @@ revert_sshd_config_permissions() {
 # --- Main Logic Execution ---
 
 case "$1" in
+	remove)
+
+    ;;
+
     purge)
         revert_sshd_config_permissions
         reload_ssh
         notify_admin_about_ssh_users_group
     ;;
 
-	remove)
-        revert_sshd_config_permissions
-        notify_admin_about_ssh_users_group
-    ;;
     
     upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
 	;;
