@@ -9,10 +9,16 @@ Vcs-Git: https://github.com/curtistinkers/deb-harden-ssh.git
 Package: deb-harden-ssh
 Architecture: all
 Depends:
- fail2ban,
  openssh-server,
  ${misc:Depends}
+Recommends:
+ aide,
+ auditd,
+ fail2ban
 Enhances:
+ aide,
+ auditd,
+ fail2ban,
  openssh-server
 Suggests:
  lynis
