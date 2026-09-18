@@ -3,6 +3,8 @@ build/
 **/*.build
 **/*.buildinfo
 **/*.changes
+**/*.dsc
+**/*.tar.gz
 **/.debhelper
 **/debhelper-build-stamp
 **/*.substvars
