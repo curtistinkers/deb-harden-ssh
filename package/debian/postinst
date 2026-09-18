@@ -30,6 +30,12 @@ reload_fail2ban() {
     fi
 }
 
+reload_systemd_daemon() {
+    if command -v systemctl >/dev/null 2>&1; then
+        systemctl daemon-reload || true
+    fi
+}
+
 harden_sshd_config_permissions() {
     if ! dpkg-statoverride --list "/etc/ssh/sshd_config" >/dev/null 2>&1; then
         dpkg-statoverride --update --add "root" "root" "0600" "/etc/ssh/sshd_config"
@@ -46,6 +52,7 @@ harden_sshd_config_permissions() {
 case "$1" in
     configure)
         harden_sshd_config_permissions
+        reload_systemd_daemon
         reload_ssh
         reload_fail2ban
         add_ssh_users_group
