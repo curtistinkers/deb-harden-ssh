@@ -25,19 +25,37 @@ This package deploys hardening settings through drop-in configuration snippets i
 ```text
 deb-harden-ssh/
 ├── debian/
-|   ├── changelog                           # Changelog
-│   ├── control                             # Package metadata and dependencies
-│   ├── install                             # Installs drop-in configs
-│   ├── postinst                            # Post-installation hooks
-│   ├── postrm                              # Post-removal hooks
-│   └── rules                               # Debhelper build targets
-└── etc/
-    ├── fail2ban/
-    │   └── jail.d/
-    │       └── harden-ssh.conf             # Fail2ban SSH jail configuration
-    └── ssh/
-        └── sshd_config.d/
-            └── 95-harden-ssh.conf          # OpenSSH hardening options
+|   ├── changelog                              # Changelog
+├   ├── control                                # Package metadata and dependencies
+│   ├── copyright                              # Copyright information
+│   ├── install                                # Installs drop-in configs
+│   ├── postinst                               # Post-installation hooks
+│   ├── postrm                                 # Post-removal hooks
+│   └── rules                                  # Debhelper build targets
+├── etc/
+│   ├── aide/
+│   │   └── aide.conf.d/
+│   │       └── 90_deb-harden-ssh_sshd.conf    # AIDE file integrity rules
+│   ├── audit/
+│   │   └── rules.d/
+│   │       └── 50-sshd.conf                   # Auditd usage tracking rules
+│   ├── fail2ban/
+│   │   └── jail.d/
+│   │       └── sshd.conf                      # Fail2ban SSH jail configuration
+│   └── ssh/
+|       ├── sshd_config.d/
+|       |   └── 95-harden-ssh_crypto.conf      # OpenSSH client cryptography hardening options
+│       └── sshd_config.d/
+│           ├── 10-harden-sshd_base.conf       # OpenSSH server baseline hardening options
+│           └── 95-harden-sshd_crypto.conf     # OpenSSH server cryptography hardening options
+└── usr/
+    └── lib/
+        └── systemd/
+            └── system/
+                ├── ssh.service.d/
+                │   └── 50-deb-harden-ssh.conf  # SSH systemd service override
+                └── ssh@.service.d/
+                    └── 50-deb-harden-ssh.conf  # SSH template systemd service override
 ```
 
 ## User Management
@@ -50,17 +68,23 @@ sudo usermod -aG ssh-users <username>
 
 ## Verification
 
-Check configuration syntax and active settings:
+Check configuration syntax and settings:
 
 ```bash
-# Validate config syntax
+# Validate OpenSSH config syntax
 sudo sshd -t
 
 # Verify fail2ban SSH jail status
 sudo fail2ban-client status sshd
+
+# Validate auditd rules
+augenrules --check
+
+# Validate AIDE rules
+aide -c /etc/aide/aide.conf --config-check
 ```
 
-## Build Package
+## Build Debian Package
 
 ### Get Package Building Requirements
 
