@@ -14,11 +14,11 @@ This package deploys hardening settings through drop-in configuration snippets i
 
 ## Hardening Applied
 
-* **Access Control:** Restricts logins to members of the `ssh-users` adn `sudo` system groups.
+* **Access Control:** Restricts logins to members of the `ssh-users` system group.
 * **Authentication:** Blocks root password login, disables empty passwords, and caps authentication retries.
 * **Session Management:** Enforces client idle timeouts to drop inactive connections.
-* **Lifecycle Automation:** Adds the `ssh-users` group, validates syntax with `sshd -t`, and reloads `ssh`
-  via `deb-systemd-invoke`.
+* **Lifecycle Automation:** Adds the `ssh-users` group, validates syntax of all services that exist, and reloads them
+  using `deb-systemd-invoke`.
 
 ## Directory Structure
 
@@ -38,12 +38,12 @@ deb-harden-ssh/
 │   │       └── 90_deb-harden-ssh_sshd.conf    # AIDE file integrity rules
 │   ├── audit/
 │   │   └── rules.d/
-│   │       └── 50-sshd.conf                   # Auditd usage tracking rules
+│   │       └── 50-sshd.rules                  # Auditd usage tracking rules
 │   ├── fail2ban/
 │   │   └── jail.d/
 │   │       └── sshd.conf                      # Fail2ban SSH jail configuration
 │   └── ssh/
-|       ├── sshd_config.d/
+|       ├── ssh_config.d/
 |       |   └── 95-harden-ssh_crypto.conf      # OpenSSH client cryptography hardening options
 │       └── sshd_config.d/
 │           ├── 10-harden-sshd_base.conf       # OpenSSH server baseline hardening options
