@@ -12,8 +12,6 @@ Depends:
  openssh-server,
  ${misc:Depends}
 Recommends:
- aide,
- auditd,
  fail2ban
 Enhances:
  aide,
@@ -21,6 +19,8 @@ Enhances:
  fail2ban,
  openssh-server
 Suggests:
+ aide,
+ auditd,
  lynis
 Description: Hardened SSH daemon configuration based on Lynis audit rules.
  Applies security hardening parameters to OpenSSH via configuration snippets
