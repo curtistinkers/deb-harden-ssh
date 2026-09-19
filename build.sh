@@ -118,7 +118,7 @@ main() {
     prepare_workspace
     clean_source_tree
     build_package
-    harvest_artifacts
+    move_build_artifacts
     cleanup_logs
     clean_source_tree
 
