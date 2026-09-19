@@ -1,13 +1,12 @@
-etc/audit/rules.d/50-deb-harden-ssh.rules etc/audit/rules.d/
+etc/aide/aide.conf.d/90_deb-harden-ssh_sshd etc/aide/aide.conf.d
 
-etc/aide/aide.conf.d/90_deb-harden-ssh etc/aide/aide.conf.d
+etc/audit/rules.d/50-sshd.rules etc/audit/rules.d/
 
-etc/ssh/ssh_config.d/90-deb-harden-ssh_crypto.conf etc/ssh/ssh_config.d/
+etc/fail2ban/jail.d/sshd.conf etc/fail2ban/jail.d/
 
-etc/ssh/sshd_config.d/10-deb-harden-ssh_override.conf etc/ssh/sshd_config.d/
-etc/ssh/sshd_config.d/90-deb-harden-ssh_crypto.conf etc/ssh/sshd_config.d/
-
-etc/fail2ban/jail.d/deb-harden-ssh.conf etc/fail2ban/jail.d/
+etc/ssh/ssh_config.d/95-harden-ssh_crypto.conf etc/ssh/ssh_config.d/
+etc/ssh/sshd_config.d/10-harden-sshd_base.conf etc/ssh/sshd_config.d/
+etc/ssh/sshd_config.d/95-harden-sshd_crypto.conf etc/ssh/sshd_config.d/
 
 usr/lib/systemd/system/ssh.service.d/50-deb-harden-ssh.conf usr/lib/systemd/system/ssh.service.d/
 usr/lib/systemd/system/sshd@.service.d/50-deb-harden-ssh.conf usr/lib/systemd/system/sshd@.service.d/
