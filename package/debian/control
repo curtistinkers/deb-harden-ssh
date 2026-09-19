@@ -21,6 +21,8 @@ Enhances:
 Suggests:
  aide,
  auditd,
+ deb-harden-audit,
+ deb-harden-fim,
  lynis
 Description: Hardened SSH daemon configuration based on Lynis audit rules.
  Applies security hardening parameters to OpenSSH via configuration snippets
