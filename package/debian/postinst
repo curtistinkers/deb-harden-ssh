@@ -15,21 +15,25 @@ add_ssh_users_group() {
 }
 
 harden_ssh_config_permissions() {
+    if ! dpkg-statoverride --list "/root/.ssh" >/dev/null 2>&1; then
+        dpkg-statoverride --update --add "root" "root" "0700" "/root/.ssh"
+        echo "Setting permissions on '/root/.ssh' directory to 700"
+    fi
     if ! dpkg-statoverride --list "/etc/ssh/ssh_config" >/dev/null 2>&1; then
         dpkg-statoverride --update --add "root" "root" "0644" "/etc/ssh/ssh_config"
         echo "Setting permissions on '/etc/ssh/ssh_config' to 644"
     fi
     if ! dpkg-statoverride --list "/etc/ssh/ssh_config.d" >/dev/null 2>&1; then
-        dpkg-statoverride --update --add "root" "root" "0644" "/etc/ssh/ssh_config.d"
-        echo "Setting permissions on '/etc/ssh/ssh_config.d/' to 644"
+        dpkg-statoverride --update --add "root" "root" "0755" "/etc/ssh/ssh_config.d"
+        echo "Setting permissions on '/etc/ssh/ssh_config.d/' directory to 755"
     fi
     if ! dpkg-statoverride --list "/etc/ssh/sshd_config" >/dev/null 2>&1; then
         dpkg-statoverride --update --add "root" "root" "0600" "/etc/ssh/sshd_config"
         echo "Setting permissions on '/etc/ssh/sshd_config' to 600"
     fi
     if ! dpkg-statoverride --list "/etc/ssh/sshd_config.d" >/dev/null 2>&1; then
-        dpkg-statoverride --update --add "root" "root" "0600" "/etc/ssh/sshd_config.d"
-        echo "Setting permissions on '/etc/ssh/sshd_config.d/' to 600"
+        dpkg-statoverride --update --add "root" "root" "0700" "/etc/ssh/sshd_config.d"
+        echo "Setting permissions on '/etc/ssh/sshd_config.d/' directory to 700"
     fi
 }
 
@@ -51,6 +55,7 @@ reload_ssh() {
         fi
     else
         echo "[!] WARNING: Invalid SSH configuration! Service not reloaded." >&2
+        return 1
     fi
 }
 

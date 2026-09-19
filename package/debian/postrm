@@ -15,6 +15,9 @@ notify_admin_about_ssh_users_group() {
 }
 
 revert_ssh_config_permissions() {
+    if dpkg-statoverride --list "/root/.ssh" >/dev/null 2>&1; then
+        dpkg-statoverride --remove "/root/.ssh"
+    fi
     if dpkg-statoverride --list "/etc/ssh/ssh_config" >/dev/null 2>&1; then
         dpkg-statoverride --remove "/etc/ssh/ssh_config"
     fi
