@@ -11,9 +11,9 @@ when they are present and active.
 
 ## Requirements
 
-* `openssh-server`
-* Recommended: `fail2ban`
-* Optional/monitoring integrations: `auditd`, `aide`
+* **Required:** `openssh-server`
+* _Recommended:_ `fail2ban`
+* Suggested: `auditd`, `aide`
 
 ## Hardening Applied
 
