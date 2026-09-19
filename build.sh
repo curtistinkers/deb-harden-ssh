@@ -1,81 +1,129 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # Exit immediately if a command exits with a non-zero status
-set -e
+set -eu
 
-# --- Configuration ---
+# --- Configuration & Globals ---
 TMP_INPUT="${1:-package}"
 TARGET_INPUT="${TMP_INPUT%/}"
 PROJECT_ROOT="$(pwd)"
 OUTPUT_DIR="${PROJECT_ROOT}/dist"
 
-# --- Validation ---
-if [ -z "${TARGET_INPUT}" ]; then
-    echo "Error: Please provide a directory name."
-    echo "Usage: $0 <directory_name>"
-    exit 1
-fi
+# Readonly constants
+readonly TMP_INPUT
+readonly TARGET_INPUT
+readonly PROJECT_ROOT
+readonly OUTPUT_DIR
 
-if [ ! -d "${TARGET_INPUT}" ]; then
-    echo "Error: Directory '${TARGET_INPUT}' does not exist."
-    exit 1
-fi
+# Global placeholders (to be set during runtime validation)
+SOURCE_DIR=""
+PACKAGE_NAME=""
+PARENT_DIR=""
 
-# Convert to absolute path so cd calls don't break paths
-TARGET_DIR="$(cd "${TARGET_INPUT}" && pwd)"
+# --- Helper Functions ---
 
-# Ensure it is a valid Debian source directory
-if [ ! -d "${TARGET_DIR}/debian" ]; then
-    echo "Error: '${TARGET_DIR}' is not a valid Debian package directory (missing 'debian/' folder)."
-    exit 1
-fi
+log_info() {
+    echo "💡 $1"
+}
 
-# Extract the actual package name declared in debian/control
-PACKAGE_NAME="$(awk '/^Package:/ {print $2; exit}' "${TARGET_DIR}/debian/control")"
+log_error() {
+    echo "❌ Error: $1" >&2
+}
 
-if [ -z "${PACKAGE_NAME}" ]; then
-    echo "Error: Could not determine Package name from '${TARGET_DIR}/debian/control'."
-    exit 1
-fi
+# --- Core Task Functions ---
 
-# Parent directory where debuild places build artifacts
-PARENT_DIR="$(dirname "${TARGET_DIR}")"
+get_source_dir() {
+    if [ -z "${TARGET_INPUT}" ]; then
+        log_error "Please provide a directory name.\nUsage: $0 <directory_name>"
+        exit 1
+    fi
 
-# --- Main Logic ---
-echo "Starting build process for package: ${PACKAGE_NAME} (Directory: ${TARGET_INPUT})"
+    if [ ! -d "${TARGET_INPUT}" ]; then
+        log_error "Directory '${TARGET_INPUT}' does not exist."
+        exit 1
+    fi
 
-# Create output directory for binaries if it doesn't exist
-mkdir -p "${OUTPUT_DIR}"
+    # Assign single variable
+    SOURCE_DIR="$(cd "${TARGET_INPUT}" && pwd)"
+}
 
-echo "Created output directory for build artifacts: ${OUTPUT_DIR}"
+validate_debian_directory() {
+    if [ ! -d "${SOURCE_DIR}/debian" ]; then
+        log_error "'${SOURCE_DIR}' is not a valid Debian package directory (missing 'debian/' folder)."
+        exit 1
+    fi
+}
 
-# Navigate into the package directory
-cd "${TARGET_DIR}"
+get_package_name() {
+    # Assign single variable
+    PACKAGE_NAME="$(awk '/^Package:/ {print $2; exit}' "${SOURCE_DIR}/debian/control")"
 
-echo "Changing to package directory: ${TARGET_DIR}"
+    if [ -z "${PACKAGE_NAME}" ]; then
+        log_error "Could not determine Package name from '${SOURCE_DIR}/debian/control'."
+        exit 1
+    fi
+}
 
-# Clean any existing artifacts before build
-debuild --no-tgz-check -- clean >/dev/null 2>&1 || true
+get_parent_dir() {
+    # Assign single variable
+    PARENT_DIR="$(dirname "${SOURCE_DIR}")"
+}
 
-echo "# Clean any existing artifacts before build"
+prepare_workspace() {
+    log_info "Starting build process for package: ${PACKAGE_NAME} (Directory: ${TARGET_INPUT})"
 
-# Run debuild to create binary package (-b) without signing changes/dsc (-us -uc)
-echo "Running debuild..."
-debuild -b -us -uc
+    # Create output directory for binaries if it doesn't exist
+    mkdir -p "${OUTPUT_DIR}"
+    log_info "Created output directory for build artifacts: ${OUTPUT_DIR}"
+}
 
-# Navigate back to project root
-cd "${PROJECT_ROOT}"
+clean_source_tree() {
+    log_info "Cleaning up source directory..."
+    # Always keep context explicit by cd'ing within the function
+    cd "${SOURCE_DIR}"
+    debuild --no-tgz-check -- clean >/dev/null 2>&1 || true
+}
 
-echo "Moving build artifacts for ${PACKAGE_NAME} to ${OUTPUT_DIR}..."
-# Use find to locate artifacts safely without triggering glob-splitting warnings
-find "${PARENT_DIR}" -maxdepth 1 -type f -name "${PACKAGE_NAME}_*.deb" -exec mv {} "${OUTPUT_DIR}/" \; 2>/dev/null || true
+build_package() {
+    log_info "Changing to package directory: ${SOURCE_DIR}"
+    cd "${SOURCE_DIR}"
 
-echo "Cleaning up temporary build logs..."
-find "${PARENT_DIR}" -maxdepth 1 -type f \( -name "${PACKAGE_NAME}_*.changes" -o -name "${PACKAGE_NAME}_*.buildinfo" -o -name "${PACKAGE_NAME}_*.build" \) -exec rm -f {} \; 2>/dev/null || true
+    log_info "Running debuild..."
+    debuild -b -us -uc
+}
 
-# --- Final Source Clean ---
-echo "Cleaning up source directory..."
-cd "${TARGET_DIR}"
-debuild --no-tgz-check -- clean >/dev/null 2>&1 || true
+move_build_artifacts() {
+    cd "${PROJECT_ROOT}"
+    log_info "Moving build artifacts for ${PACKAGE_NAME} to ${OUTPUT_DIR}..."
 
-echo "Success! Built artifacts are in: ${OUTPUT_DIR}"
+    # Use find to locate artifacts safely without triggering glob-splitting warnings
+    find "${PARENT_DIR}" -maxdepth 1 -type f -name "${PACKAGE_NAME}_*.deb" -exec mv {} "${OUTPUT_DIR}/" \; 2>/dev/null || true
+}
+
+cleanup_logs() {
+    log_info "Cleaning up temporary build logs..."
+    find "${PARENT_DIR}" -maxdepth 1 -type f \( -name "${PACKAGE_NAME}_*.changes" -o -name "${PACKAGE_NAME}_*.buildinfo" -o -name "${PACKAGE_NAME}_*.build" \) -exec rm -f {} \; 2>/dev/null || true
+}
+
+# --- Main Pipeline Orchestration ---
+
+main() {
+    # Sequential variable setup and validation
+    get_source_dir
+    validate_debian_directory
+    get_package_name
+    get_parent_dir
+
+    # Rest of pipeline commands...
+    prepare_workspace
+    clean_source_tree
+    build_package
+    harvest_artifacts
+    cleanup_logs
+    clean_source_tree
+
+    log_info "Success! Built artifacts are in: ${OUTPUT_DIR}"
+}
+
+# Execute main pipeline
+main
