@@ -1,3 +1,9 @@
+deb-harden-ssh (1.0.1) stable; urgency=low
+
+  * Removed -1 version number.
+
+ -- curtistinkers <curtistinkers@gmail.com>  Sat, 19 Sep 2026 17:25:00 -0500
+
 deb-harden-ssh (1.0.0-1) stable; urgency=low
 
   * Initial release of deb-harden-ssh.
