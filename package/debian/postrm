@@ -29,6 +29,12 @@ revert_ssh_config_permissions() {
     fi
 }
 
+reload_systemd_daemon() {
+    if command -v systemctl >/dev/null 2>&1; then
+        systemctl daemon-reload || true
+    fi
+}
+
 reload_ssh() {
     if sshd -t; then
         if command -v systemctl >/dev/null 2>&1 && systemctl is-active --quiet ssh; then
@@ -95,6 +101,7 @@ case "$1" in
 
     purge)
         revert_ssh_config_permissions
+        reload_systemd_daemon
         reload_ssh
         reload_fail2ban
         reload_audit_rules

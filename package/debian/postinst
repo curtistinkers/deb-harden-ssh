@@ -14,7 +14,7 @@ add_ssh_users_group() {
     fi
 }
 
-harden_sshd_config_permissions() {
+harden_ssh_config_permissions() {
     if ! dpkg-statoverride --list "/etc/ssh/ssh_config" >/dev/null 2>&1; then
         dpkg-statoverride --update --add "root" "root" "0644" "/etc/ssh/ssh_config"
         echo "Setting permissions on '/etc/ssh/ssh_config' to 644"
@@ -101,7 +101,7 @@ reload_audit_rules() {
 
 case "$1" in
     configure)
-        harden_sshd_config_permissions
+        harden_ssh_config_permissions
         reload_systemd_daemon
         reload_ssh
         reload_fail2ban
