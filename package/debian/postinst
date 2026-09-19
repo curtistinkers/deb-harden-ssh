@@ -88,7 +88,7 @@ reload_audit_rules() {
                 echo "[*] Compiling and loading auditd rules into the kernel."
                 augenrules --load || true
                 if command -v deb-systemd-invoke >/dev/null 2>&1; then
-                    deb-systemd-invoke reload auditd || true
+                    deb-systemd-invoke restart auditd || true
                 fi
             else
                 echo "[!] auditd service not active, skipping kernel rule load." >&2
