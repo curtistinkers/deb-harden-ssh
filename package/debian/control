@@ -24,6 +24,10 @@ Suggests:
  deb-harden-audit,
  deb-harden-fim,
  lynis
-Description: Hardened SSH daemon configuration based on Lynis audit rules.
- Applies security hardening parameters to OpenSSH via configuration snippets
- in /etc/ssh/sshd_config.d/, systemd service sandboxing, and a fail2ban jail.
+Description: Hardened SSH for Debian/Ubuntu based on Lynis guidance.
+ Applies secure OpenSSH defaults for both the server and client via drop-in
+ configuration snippets in /etc/ssh/sshd_config.d/ and /etc/ssh/ssh_config.d/,
+ restricts SSH access to a dedicated ssh-users system group, adds fail2ban
+ protection, and includes auditd/AIDE monitoring rules for SSH. The package
+ validates configuration and reloads the relevant services during install and
+ purge when they are present and active.

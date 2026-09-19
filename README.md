@@ -1,26 +1,34 @@
 # `deb-harden-ssh`
 
-Automated OpenSSH daemon hardening package based on Lynis security recommendations.
+Automated OpenSSH hardening package for Debian and Ubuntu, based on Lynis guidance and secure defaults for remote administration.
 
 ## Overview
 
-This package deploys hardening settings through drop-in configuration snippets in `/etc/ssh/sshd_config.d/` and
-`/etc/fail2ban/jail.d/`. It also adds an `ssh-users` system group.
+This package stages hardened configuration snippets under the Debian source tree in `package/etc/` and installs them
+into the system locations used by OpenSSH, fail2ban, auditd, and AIDE. It creates a dedicated `ssh-users` system group,
+applies restrictive ownership and mode overrides for SSH config paths, and validates or reloads the relevant services
+when they are present and active.
 
-## Requires
+## Requirements
 
-* fail2ban
-* openssh-server
+* `openssh-server`
+* Recommended: `fail2ban`
+* Optional/monitoring integrations: `auditd`, `aide`
 
 ## Hardening Applied
 
-* **Access Control:** Restricts logins to members of the `ssh-users` system group.
-* **Authentication:** Blocks root password login, disables empty passwords, and caps authentication retries.
-* **Session Management:** Enforces client idle timeouts to drop inactive connections.
-* **Lifecycle Automation:** Adds the `ssh-users` group, validates syntax of all services that exist, and reloads them
-  using `deb-systemd-invoke`.
+* **Access Control:** Restricts SSH logins to members of the `ssh-users` group via `AllowGroups ssh-users`.
+* **Authentication:** Disables password authentication, blocks root password login, rejects empty passwords, and caps
+  `MaxAuthTries` at 3.
+* **Session Security:** Disables dangerous forwarding, enforces idle timeouts, limits concurrent sessions, and reduces
+  the exposure of SSH service state.
+* **Cryptography:** Sets hardened `KexAlgorithms`, `Ciphers`, `MACs`, `HostKeyAlgorithms`, and `RequiredRSASize` for
+  both SSH server and client configuration.
+* **Monitoring:** Adds AIDE checks for SSH config and auditd watch rules for SSH binaries and configuration files.
+* **Lifecycle Automation:** Creates the `ssh-users` group during install, validates configuration with `sshd -t`, checks
+  fail2ban/audit rules when present, and reloads services through `deb-systemd-invoke` when active.
 
-## Directory Structure
+## Repository / Package Layout
 
 ```text
 deb-harden-ssh/
@@ -60,7 +68,7 @@ deb-harden-ssh/
 
 ## User Management
 
-Grant SSH access by adding target users to the ssh-users group:
+Grant SSH access by adding target users to the `ssh-users` group:
 
 ```bash
 sudo usermod -aG ssh-users <username>
@@ -68,7 +76,7 @@ sudo usermod -aG ssh-users <username>
 
 ## Verification
 
-Check configuration syntax and settings:
+Check configuration syntax and settings after installation:
 
 ```bash
 # Validate OpenSSH config syntax
@@ -78,27 +86,30 @@ sudo sshd -t
 sudo fail2ban-client status sshd
 
 # Validate auditd rules
-augenrules --check
+sudo augenrules --check
 
 # Validate AIDE rules
-aide -c /etc/aide/aide.conf --config-check
+sudo aide -c /etc/aide/aide.conf --config-check
 ```
 
 ## Build Debian Package
 
-### Get Package Building Requirements
+Build the package using the included build script or using debuild directly.
+
+### Install build requirements
 
 ```bash
 apt update && apt install devscripts
 ```
 
-### `.deb` ackaging
-
-Build the package using the included build script or using debuild directly:
+### Build with help script
 
 ```bash
 ./build.sh
+```
 
-# Or by using debuild directly
+### Build directly with debuild
+
+```bash
 cd package && debuild -us -uc -b
 ```
